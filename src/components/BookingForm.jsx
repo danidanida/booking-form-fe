@@ -1,0 +1,198 @@
+// BookingForm.jsx
+import React, {
+    Suspense,
+    lazy,
+    useState,
+    useCallback,
+    useMemo,
+    startTransition,
+    useEffect,
+} from 'react';
+import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
+import { Box, Typography, Alert, Card, CardContent, Button } from '@mui/material';
+import PassengerControls from './PassengerControls';
+import PassengerList from './PassengerList';
+import { submitBookingForm } from '../services/bookingService';
+import SubmissionSuccess from './SubmissionSuccess';
+
+const LazyModal = lazy(() => import('./PassengerFormModal'));
+
+const DEFAULT_PASSENGER = () => ({
+    fullName: '',
+    phone: '',
+    email: '',
+    birthDate: null,
+    passport: '',
+    passportExpiry: null,
+});
+
+export default function BookingForm() {
+    const [submitError, setSubmitError] = useState('');
+    const methods = useForm({
+        defaultValues: {
+            departureStation: '',
+            arrivalStation: '',
+            passengers: [],
+        },
+    });
+    const {
+        control,
+        handleSubmit,
+        reset,
+        formState: { isSubmitting },
+    } = methods;
+
+    const { fields, append, remove, update: rawUpdate } = useFieldArray({
+        control,
+        name: 'passengers',
+    });
+
+    const count = fields.length;
+
+    const [activeIndex, _setActiveIndex] = useState(null);
+    const setActiveIndex = useCallback((i) => {
+        startTransition(() => _setActiveIndex(i));
+    }, []);
+
+    const [isSuccess, setIsSuccess] = useState(false)
+
+    const handleAdd = useCallback(() => {
+        append(DEFAULT_PASSENGER());
+        // if they’d just hit “No passengers provided”, clear it immediately
+        setSubmitError(prev =>
+            prev === 'No passengers provided' ? '' : prev
+        );
+    }, [append, setSubmitError]);
+
+    const handleRemove = useCallback((i) => remove(i), [remove]);
+
+    const handleUpdate = (i, data) => {
+        rawUpdate(i, data);
+        setSubmitError('');
+    };
+
+    const list = useMemo(
+        () => (
+            <PassengerList
+                fields={fields}
+                activeIndex={activeIndex}
+                setActive={setActiveIndex}
+                remove={handleRemove}
+            />
+        ),
+        [fields, activeIndex, handleRemove, setActiveIndex]
+    );
+
+    // pre-fetch modal chunk
+    useEffect(() => {
+        import('./PassengerFormModal');
+    }, []);
+
+    const onSubmit = async (data) => {
+
+        console.log("I AM ON SUBMIT ")
+        if (!data.departureStation || !data.arrivalStation) {
+            setSubmitError('Please select both Departure and Arrival stations.');
+            return;
+        }
+        if (data.passengers.length === 0) {
+            setSubmitError('No passengers provided');
+            return;
+        }
+
+        const invalidIndex = data.passengers.findIndex(
+            ({ fullName, phone, email, birthDate, passport, passportExpiry }) =>
+                !fullName ||
+                !phone ||
+                !email ||
+                !birthDate ||
+                !passport ||
+                !passportExpiry
+        );
+
+        if (invalidIndex !== -1) {
+            setSubmitError(
+                `Please complete passengers' details before submitting.`
+            );
+            return;
+        }
+
+        setSubmitError('');
+        try {
+            const result = await submitBookingForm(data);
+            setIsSuccess(true)
+            // add redirect to next page / indicate success etc.
+
+        } catch (err) {
+            setSubmitError(err.message || 'Submission failed—try again.');
+        }
+    };
+
+    const handleReset = () => {
+        reset(
+            {
+                departureStation: '',
+                arrivalStation: '',
+                passengers: [],
+            },
+            { keepDefaultValues: true }
+        );
+        setSubmitError('');
+        setIsSuccess(false);
+    };
+
+    if (isSuccess) {
+        return <SubmissionSuccess bookingId={"12345"} onReset={handleReset} />;
+    }
+
+    return (
+        <FormProvider {...methods}>
+            <Box
+                component="form"
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+                sx={{ width: '100%', maxWidth: 900, mx: 'auto' }}
+            >
+                <Typography variant="h5" gutterBottom mb={2}>
+                    Trip Details
+                </Typography>
+
+                {/* Main boxed controls + submit */}
+                <Box mb={2}>
+                    <PassengerControls
+                        count={count}
+                        onAdd={handleAdd}
+                        onRemove={handleRemove}
+                        control={control}
+                        isSubmitting={isSubmitting}
+                        onSubmit={handleSubmit(onSubmit)}
+                    />
+                    {/* ERROR/SUCCESS BANNER BELOW the “Trip Details” box */}
+                    {submitError && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {submitError}
+                        </Alert>
+                    )}
+                    {list}
+                    {activeIndex !== null && (
+                        <Suspense fallback={null}>
+                            <LazyModal
+                                index={activeIndex}
+                                onClose={() => setActiveIndex(null)}
+                                update={handleUpdate}
+                            />
+                        </Suspense>
+                    )}
+                </Box>
+            </Box>
+        </FormProvider>
+    );
+}
+
+
+
+
+
+
+
+
