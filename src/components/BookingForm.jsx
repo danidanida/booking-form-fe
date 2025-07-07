@@ -21,6 +21,7 @@ export default function BookingForm() {
     const [submitError, setSubmitError] = useState('');
     const [activeIndex, _setActiveIndex] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [bookingId, setBookingId] = useState(null);
 
     const methods = useForm({
         defaultValues: {
@@ -110,7 +111,8 @@ export default function BookingForm() {
         try {
             const result = await submitBookingForm(data);
             // In real life to process api response, status etc. 
-            setIsSuccess(true)
+            setBookingId(result?.data?.id)
+            setIsSuccess(true);
         } catch (err) {
             setSubmitError(err.message || 'Submission failed—try again.');
         }
@@ -127,10 +129,11 @@ export default function BookingForm() {
         );
         setSubmitError('');
         setIsSuccess(false);
+        setBookingId(null);
     };
 
     if (isSuccess) {
-        return <SubmissionSuccess bookingId={"12345"} onReset={handleReset} />;
+        return <SubmissionSuccess bookingId={bookingId} onReset={handleReset} />;
     }
 
     return (

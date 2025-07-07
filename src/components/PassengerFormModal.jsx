@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import dayjs from 'dayjs';
-import { isValidThaiPhone, isValidEmail } from '../utils/validations';
+import { isValidThaiPhone, isValidEmail, isValidPassport } from '../utils/validations';
 import FormDatePicker from './FormDatePicker';
 
 export default function PassengerFormModal({
@@ -123,7 +123,10 @@ export default function PassengerFormModal({
                 <Controller
                     name="passport"
                     control={control}
-                    rules={{ required: 'Passport is required' }}
+                    rules={{
+                        required: 'Passport Number is required',
+                        validate: isValidPassport,
+                    }}
                     render={({ field, fieldState }) => (
                         <TextField
                             {...field}

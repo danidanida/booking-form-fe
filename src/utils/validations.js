@@ -3,3 +3,6 @@ export const isValidThaiPhone = (value) =>
 
 export const isValidEmail = (value) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Invalid email address';
+
+export const isValidPassport = (value) =>
+    /^[A-Za-z0-9]+$/.test(value) || 'Passport number should only contain letters and numbers';

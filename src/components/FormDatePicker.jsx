@@ -15,8 +15,6 @@ function _FormDatePicker({
     required = false,
     minDate = null,
     maxDate = null,
-    disablePast = false,
-    disableFuture = false,
     validate,
 }) {
     const {
@@ -56,35 +54,22 @@ function _FormDatePicker({
         onBlur();
     };
 
-    const today = dayjs().startOf('day').toDate();
-
-    const effectiveMinDate = disablePast
-        ? dayjs(minDate || today).isAfter(today)
-            ? dayjs(minDate).toDate()
-            : today
-        : minDate
-            ? dayjs(minDate).toDate()
-            : undefined;
-
-    const effectiveMaxDate = disableFuture
-        ? dayjs(maxDate || today).isBefore(today)
-            ? dayjs(maxDate).toDate()
-            : today
-        : maxDate
-            ? dayjs(maxDate).toDate()
-            : undefined;
+    // Derive effective boundaries from minDate / maxDate
+    const effectiveMinDate = minDate ? dayjs(minDate).toDate() : undefined;
+    const effectiveMaxDate = maxDate ? dayjs(maxDate).toDate() : undefined;
 
     const disabledMatchers = [];
-
-    if (disablePast) disabledMatchers.push({ before: effectiveMinDate });
-
-    if (disableFuture) disabledMatchers.push({ after: effectiveMaxDate });
+    if (effectiveMinDate) disabledMatchers.push({ before: effectiveMinDate });
+    if (effectiveMaxDate) disabledMatchers.push({ after: effectiveMaxDate });
 
     // Popper state
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
 
-    useEffect(() => { import('react-day-picker'); }, []);
+    // pre-load DayPicker code
+    useEffect(() => {
+        import('react-day-picker');
+    }, []);
 
     return (
         <>
@@ -117,13 +102,14 @@ function _FormDatePicker({
             />
 
             <Popper open={open} anchorEl={anchorRef.current} placement="bottom-start" style={{ zIndex: 1300 }}>
-                <ClickAwayListener onClickAway={() => {
-                    // only parse if the user actually changed the text
-                    if (inputValue !== formattedValue) {
-                        parseAndCommit(inputValue);
-                    }
-                    setOpen(false);
-                }}
+                <ClickAwayListener
+                    onClickAway={() => {
+                        // only parse if the user actually changed the text
+                        if (inputValue !== formattedValue) {
+                            parseAndCommit(inputValue);
+                        }
+                        setOpen(false);
+                    }}
                 >
                     <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 1 }}>
                         <Suspense fallback={<div>Loading…</div>}>
@@ -138,7 +124,10 @@ function _FormDatePicker({
                                     setOpen(false);
                                 }}
                                 disabled={disabledMatchers}
-                                hidden={{ before: effectiveMinDate, after: effectiveMaxDate }}
+                                hidden={{
+                                    before: effectiveMinDate,
+                                    after: effectiveMaxDate,
+                                }}
                                 captionLayout="dropdown"
                             />
                         </Suspense>
@@ -150,6 +139,7 @@ function _FormDatePicker({
 }
 
 export default memo(_FormDatePicker);
+
 
 
 
