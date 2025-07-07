@@ -1,21 +1,12 @@
 // src/components/FormDatePicker.jsx
-
-import React, {
-  useState,
-  useRef,
-  lazy,
-  Suspense,
-  useEffect,
-  memo,
-} from 'react';
+import React, { useState, useRef, lazy, Suspense, useEffect, memo } from 'react';
 import { useController } from 'react-hook-form';
 import { TextField, Popper, ClickAwayListener, Box } from '@mui/material';
 import dayjs from 'dayjs';
 import 'react-day-picker/dist/style.css';
 
-// Lazy‐load the calendar
 const DayPicker = lazy(() =>
-  import('react-day-picker').then((mod) => ({ default: mod.DayPicker }))
+  import('react-day-picker').then(mod => ({ default: mod.DayPicker }))
 );
 
 function _FormDatePicker({
@@ -25,51 +16,72 @@ function _FormDatePicker({
   required = false,
   minDate = null,
   maxDate = null,
+  disablePast = false,
+  disableFuture = false,
   validate,
 }) {
-  // subscribe this component only to its own field
   const {
-    field: { value, onChange, onBlur, ref },
+    field: { value, onChange, onBlur },
     fieldState: { error },
   } = useController({
     name,
     control,
     defaultValue: null,
-    rules: {
-      required: required && 'Required',
-      validate,
-    },
+    rules: { required: required && 'Required', validate },
   });
 
+  // Compute the “true” formatted value
+  const formattedValue = value ? dayjs(value).format('DD/MM/YYYY') : '';
+
   // Local input state
-  const [inputValue, setInputValue] = useState(
-    value ? dayjs(value).format('DD/MM/YYYY') : ''
-  );
+  const [inputValue, setInputValue] = useState(formattedValue);
 
-  // Sync if external value changes (e.g. form reset)
+  // Keep in sync if value changes externally
   useEffect(() => {
-    setInputValue(value ? dayjs(value).format('DD/MM/YYYY') : '');
-  }, [value]);
+    if (formattedValue !== inputValue) {
+      setInputValue(formattedValue);
+    }
+  }, [formattedValue]);
 
-  // Popper open state
-  const [open, setOpen] = useState(false);
-  const anchorRef = useRef(null);
-
-  // Pre‐fetch the calendar code
-  useEffect(() => {
-    import('react-day-picker');
-  }, []);
-
-  // Helpers
-  const parseAndCommit = (txt) => {
-    const parsed = dayjs(txt, 'DD/MM/YYYY', true);
-    if (parsed.isValid()) {
-      onChange(parsed.toDate());
+  // parse+commit
+  const parseAndCommit = txt => {
+    const d = dayjs(txt, 'DD/MM/YYYY', true);
+    if (d.isValid()) {
+      onChange(d.toDate());
+      // immediately update display to stable DMY
+      setInputValue(dayjs(d).format('DD/MM/YYYY'));
     } else {
       onChange(null);
+      setInputValue('');
     }
     onBlur();
   };
+
+  // … compute effectiveMinDate, effectiveMaxDate & disabledMatchers as before …
+
+  const today = dayjs().startOf('day').toDate();
+  const effectiveMinDate = disablePast
+    ? dayjs(minDate || today).isAfter(today)
+      ? dayjs(minDate).toDate()
+      : today
+    : minDate
+      ? dayjs(minDate).toDate()
+      : undefined;
+  const effectiveMaxDate = disableFuture
+    ? dayjs(maxDate || today).isBefore(today)
+      ? dayjs(maxDate).toDate()
+      : today
+    : maxDate
+      ? dayjs(maxDate).toDate()
+      : undefined;
+  const disabledMatchers = [];
+  if (disablePast) disabledMatchers.push({ before: effectiveMinDate });
+  if (disableFuture) disabledMatchers.push({ after: effectiveMaxDate });
+
+  // Popper state
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
+  useEffect(() => { import('react-day-picker'); }, []);
 
   return (
     <>
@@ -78,17 +90,22 @@ function _FormDatePicker({
         label={label}
         placeholder="DD/MM/YYYY"
         value={inputValue}
-        onClick={() => setOpen(true)}
-        onChange={(e) => {
+        onClick={() => {
+          // reset display to the true formatted value
+          setInputValue(formattedValue);
+          setOpen(true);
+        }}
+        onChange={e => {
           const txt = e.target.value;
-          // Only allow digits & slashes as user types
           if (/^\d{0,2}(\/\d{0,2}(\/\d{0,4})?)?$/.test(txt)) {
             setInputValue(txt);
           }
         }}
         onBlur={() => {
-          // commit on blur
-          parseAndCommit(inputValue);
+          // only re-format when popper is closed *and* text differs
+          if (!open && inputValue !== formattedValue) {
+            parseAndCommit(inputValue);
+          }
         }}
         fullWidth
         margin="normal"
@@ -96,34 +113,29 @@ function _FormDatePicker({
         helperText={error?.message}
       />
 
-      <Popper
-        open={open}
-        anchorEl={anchorRef.current}
-        placement="bottom-start"
-        style={{ zIndex: 1300 }}
-      >
-        <ClickAwayListener onClickAway={() => setOpen(false)}>
+      <Popper open={open} anchorEl={anchorRef.current} placement="bottom-start" style={{ zIndex: 1300 }}>
+        <ClickAwayListener onClickAway={() => {
+            // only parse if the user actually changed the text
+            if (inputValue !== formattedValue) {
+              parseAndCommit(inputValue);
+            }
+            setOpen(false);
+          }}
+        >
           <Box sx={{ bgcolor: 'background.paper', boxShadow: 1, borderRadius: 1, p: 1 }}>
             <Suspense fallback={<div>Loading…</div>}>
               <DayPicker
                 mode="single"
-                selected={
-                  value instanceof Date
-                    ? value
-                    : dayjs(value, 'DD/MM/YYYY', true).isValid()
-                    ? dayjs(value, 'DD/MM/YYYY', true).toDate()
-                    : undefined
-                }
-                onSelect={(date) => {
-                  // update both local and form on select
-                  const formatted = dayjs(date).format('DD/MM/YYYY');
-                  setInputValue(formatted);
+                selected={value instanceof Date ? value : undefined}
+                onSelect={date => {
+                  const fmt = dayjs(date).format('DD/MM/YYYY');
+                  setInputValue(fmt);
                   onChange(date);
                   onBlur();
                   setOpen(false);
                 }}
-                fromDate={minDate ? dayjs(minDate).toDate() : undefined}
-                toDate={maxDate ? dayjs(maxDate).toDate() : undefined}
+                disabled={disabledMatchers}
+                hidden={{ before: effectiveMinDate, after: effectiveMaxDate }}
                 captionLayout="dropdown"
               />
             </Suspense>
@@ -135,6 +147,9 @@ function _FormDatePicker({
 }
 
 export default memo(_FormDatePicker);
+
+
+
 
 
 

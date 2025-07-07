@@ -9,7 +9,7 @@ import React, {
     useEffect,
 } from 'react';
 import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
-import { Box, Typography, Alert, Card, CardContent, Button } from '@mui/material';
+import { Box, Typography, Alert } from '@mui/material';
 import PassengerControls from './PassengerControls';
 import PassengerList from './PassengerList';
 import { submitBookingForm } from '../services/bookingService';
@@ -180,6 +180,7 @@ export default function BookingForm() {
                                 index={activeIndex}
                                 onClose={() => setActiveIndex(null)}
                                 update={handleUpdate}
+                                passenger={fields[activeIndex]}
                             />
                         </Suspense>
                     )}
