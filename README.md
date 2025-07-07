@@ -10,14 +10,20 @@ built with React, Vite, Material UI, react-hook-form.
 - npm
 
 ### Installation
-- copy repository
-- cd booking-form
-- npm install
 
+copy repository
+
+run 
+```bash
+npm install
+```
 
 ### Running the Application (Development)
 
-- npm run dev
+run
+```bash
+npm run dev
+```
 
 Visit [http://localhost:5173](http://localhost:5173) in your browser.
 
@@ -63,6 +69,7 @@ I used react-day-picker instead of MUI’s date picker since it's lighter and sa
 - **Testing Coverage**: Only core flow is tested. More edge cases and negative scenarios could be covered.
 - **Error Handling**: More error handling is required.
 - **Inline Styles**: Some components use inline CSS for quick styling. 
-- **Accessibility**: Would be nice to go throw app and test it separately in terms of accessibility. 
+- **Accessibility**: Would be nice to go throw app and test it separately in terms of accessibility.
+- **Code Formatting**: No Prettier is set up, so styles and formatting aren’t consistent across files. 
 
 
