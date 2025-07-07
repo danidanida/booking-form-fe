@@ -7,35 +7,6 @@ const theme = createTheme({
   typography: {
     fontFamily: '"Plus Jakarta Sans", sans-serif',
   },
-  palette: {
-    mode: 'light',
-    secondary: {
-      light: '#8074FF',
-      main: '#4B27FE',
-      dark: '#3C1FE2',
-    },
-    error: {
-      main: '#E54A1F',
-    },
-    warning: {
-      main: '#FFB533',
-    },
-    info: {
-      main: '#7158FF',
-    },
-    success: {
-      main: '#FF9679',
-    },
-    text: {
-      primary: '#181818',
-      secondary: '#53504A',
-    },
-    background: {
-      default: '#FCF7F0',
-      paper: '#FFFFFF',
-    },
-    divider: '#C8C0B6',
-  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {

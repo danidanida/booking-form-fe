@@ -6,6 +6,6 @@ export const submitBookingForm = async (formData) => {
       } else {
         reject(new Error('No passengers provided'));
       }
-    }, 700);
+    }, 700); // simulate API delay
   });
 };
