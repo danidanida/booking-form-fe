@@ -31,6 +31,7 @@ export default React.memo(function PassengerControls({
     const departureStation = watch('departureStation');
     const [toOptions, setToOptions] = useState([]);
     const [loadingTo, setLoadingTo] = useState(false);
+    const [rawCount, setRawCount] = useState(String(count));
 
     useEffect(() => {
         if (!departureStation) {
@@ -43,7 +44,6 @@ export default React.memo(function PassengerControls({
             .finally(() => setLoadingTo(false));
     }, [departureStation]);
 
-    const [rawCount, setRawCount] = useState(String(count));
     useEffect(() => {
         setRawCount(String(count));
     }, [count]);
@@ -149,7 +149,7 @@ export default React.memo(function PassengerControls({
                             px: 3,
                             borderRadius: 2,
                             '&:hover': { backgroundColor: '#1e40af' },
-                            marginTop:'5px'
+                            marginTop: '5px'
                         }}
                     >
                         {isSubmitting ? (

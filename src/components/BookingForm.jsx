@@ -13,20 +13,15 @@ import PassengerControls from './PassengerControls';
 import PassengerList from './PassengerList';
 import { submitBookingForm } from '../services/bookingService';
 import SubmissionSuccess from './SubmissionSuccess';
+import { DEFAULT_PASSENGER } from '../data/defaultPassenger';
 
 const LazyModal = lazy(() => import('./PassengerFormModal'));
 
-const DEFAULT_PASSENGER = () => ({
-    fullName: '',
-    phone: '',
-    email: '',
-    birthDate: null,
-    passport: '',
-    passportExpiry: null,
-});
-
 export default function BookingForm() {
     const [submitError, setSubmitError] = useState('');
+    const [activeIndex, _setActiveIndex] = useState(null);
+    const [isSuccess, setIsSuccess] = useState(false);
+
     const methods = useForm({
         defaultValues: {
             departureStation: '',
@@ -48,16 +43,12 @@ export default function BookingForm() {
 
     const count = fields.length;
 
-    const [activeIndex, _setActiveIndex] = useState(null);
     const setActiveIndex = useCallback((i) => {
         startTransition(() => _setActiveIndex(i));
     }, []);
 
-    const [isSuccess, setIsSuccess] = useState(false)
-
     const handleAdd = useCallback(() => {
         append(DEFAULT_PASSENGER());
-        // if they’d just hit “No passengers provided”, clear it immediately
         setSubmitError(prev =>
             prev === 'No passengers provided' ? '' : prev
         );
@@ -89,7 +80,6 @@ export default function BookingForm() {
 
     const onSubmit = async (data) => {
 
-        console.log("I AM ON SUBMIT ")
         if (!data.departureStation || !data.arrivalStation) {
             setSubmitError('Please select both Departure and Arrival stations.');
             return;
@@ -119,9 +109,8 @@ export default function BookingForm() {
         setSubmitError('');
         try {
             const result = await submitBookingForm(data);
+            // In real life to process api response, status etc. 
             setIsSuccess(true)
-            // add redirect to next page / indicate success etc.
-
         } catch (err) {
             setSubmitError(err.message || 'Submission failed—try again.');
         }
@@ -155,8 +144,6 @@ export default function BookingForm() {
                 <Typography variant="h5" gutterBottom mb={2}>
                     Trip Details
                 </Typography>
-
-                {/* Main boxed controls + submit */}
                 <Box mb={2}>
                     <PassengerControls
                         count={count}
@@ -166,7 +153,6 @@ export default function BookingForm() {
                         isSubmitting={isSubmitting}
                         onSubmit={handleSubmit(onSubmit)}
                     />
-                    {/* ERROR/SUCCESS BANNER BELOW the “Trip Details” box */}
                     {submitError && (
                         <Alert severity="error" sx={{ mb: 2 }}>
                             {submitError}

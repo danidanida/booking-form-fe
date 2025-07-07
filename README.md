@@ -13,14 +13,12 @@ built with React, Vite, Material UI, react-hook-form.
 
 copy repository
 
-run 
 ```bash
 npm install
 ```
 
 ### Running the Application (Development)
 
-run
 ```bash
 npm run dev
 ```
@@ -71,5 +69,6 @@ I used react-day-picker instead of MUI’s date picker since it's lighter and sa
 - **Inline Styles**: Some components use inline CSS for quick styling. 
 - **Accessibility**: Would be nice to go throw app and test it separately in terms of accessibility.
 - **Code Formatting**: No Prettier is set up, so styles and formatting aren’t consistent across files. 
+- **Emojis Usage**: I just used emojis instead of proper, cross-browser icons.
 
 
