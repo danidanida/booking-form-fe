@@ -101,6 +101,7 @@ export default React.memo(function PassengerControls({
                         <IconButton
                             onClick={() => onRemove(count - 1)}
                             disabled={count <= 0 || isSubmitting}
+                            aria-label="decrement passenger"
                         >
                             <RemoveIcon />
                         </IconButton>
@@ -126,6 +127,7 @@ export default React.memo(function PassengerControls({
                         <IconButton
                             onClick={onAdd}
                             disabled={count >= 100 || isSubmitting}
+                            aria-label="increment passenger"
                         >
                             <AddIcon />
                         </IconButton>
@@ -139,6 +141,7 @@ export default React.memo(function PassengerControls({
                         fullWidth={isMobile}
                         disabled={isSubmitting}
                         onClick={onSubmit}
+                        aria-label="submit booking"
                         sx={{
                             backgroundColor: '#2563eb',
                             fontWeight: 600,

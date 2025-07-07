@@ -65,13 +65,15 @@ export default React.memo(function PassengerListItem({ index, isActive, setActiv
             <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                     type="button"
+                    aria-label="edit passenger"
                     onClick={(e) => { e.stopPropagation(); setActive(index); }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                     ✏️
                 </button>
                 <button
-                    type="button"                         // ← and here
+                    type="button"
+                    aria-label="delete passenger"
                     onClick={(e) => { e.stopPropagation(); remove(index); }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                 >
