@@ -31,7 +31,6 @@ export default React.memo(function PassengerControls({
     const departureStation = watch('departureStation');
     const [toOptions, setToOptions] = useState([]);
     const [loadingTo, setLoadingTo] = useState(false);
-    const [rawCount, setRawCount] = useState(String(count));
 
     useEffect(() => {
         if (!departureStation) {
@@ -44,13 +43,9 @@ export default React.memo(function PassengerControls({
             .finally(() => setLoadingTo(false));
     }, [departureStation]);
 
-    useEffect(() => {
-        setRawCount(String(count));
-    }, [count]);
 
     const handleRawChange = (e) => {
         const value = e.target.value;
-        setRawCount(value);
         const parsed = Math.max(0, Math.min(100, Number(value) || 0));
         if (parsed > count) {
             for (let i = 0; i < parsed - count; i++) onAdd();
@@ -109,7 +104,7 @@ export default React.memo(function PassengerControls({
                         <TextField
                             type="number"
                             label="Passengers"
-                            value={rawCount}
+                            value={String(count)}
                             onChange={handleRawChange}
                             slotProps={{
                                 input: {

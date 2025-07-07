@@ -5,7 +5,6 @@ import React, {
     useCallback,
     useMemo,
     startTransition,
-    useEffect,
 } from 'react';
 import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
 import { Box, Typography, Alert } from '@mui/material';
@@ -73,11 +72,6 @@ export default function BookingForm() {
         ),
         [fields, activeIndex, handleRemove, setActiveIndex]
     );
-
-    // pre-fetch modal chunk
-    useEffect(() => {
-        import('./PassengerFormModal');
-    }, []);
 
     const onSubmit = async (data) => {
 
@@ -163,7 +157,7 @@ export default function BookingForm() {
                     )}
                     {list}
                     {activeIndex !== null && (
-                        <Suspense fallback={null}>
+                        <Suspense fallback={<div>Loading…</div>}>
                             <LazyModal
                                 index={activeIndex}
                                 onClose={() => setActiveIndex(null)}

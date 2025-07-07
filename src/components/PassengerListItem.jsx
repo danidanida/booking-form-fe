@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 export default React.memo(function PassengerListItem({ index, isActive, setActive, remove }) {
@@ -13,14 +13,13 @@ export default React.memo(function PassengerListItem({ index, isActive, setActiv
 
     const isFilled = fullName.trim().length > 0;
 
-    const initials = useMemo(() => {
-        if (!isFilled) return 'A';
-        return fullName
+    const initials = isFilled
+        ? fullName
             .split(' ')
             .map((w) => w[0])
             .join('')
-            .toUpperCase();
-    }, [fullName, isFilled]);
+            .toUpperCase()
+        : 'A';
 
     return (
         <div
